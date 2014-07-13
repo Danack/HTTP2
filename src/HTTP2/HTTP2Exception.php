@@ -1,4 +1,6 @@
 <?php
+
+namespace HTTP2;
 /**
  * Part of HTTP2
  *
@@ -22,7 +24,4 @@
  * @version  Release: @version@
  * @link     http://pear.php.net/package/HTTP2
  */
-class HTTP2_Exception extends Exception
-{
-}
-?>
+class HTTP2Exception extends \Exception {}

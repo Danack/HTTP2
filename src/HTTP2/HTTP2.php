@@ -1,4 +1,7 @@
 <?php
+
+namespace HTTP2;
+
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
@@ -19,7 +22,6 @@
  * @link      http://pear.php.net/package/HTTP2
  */
 
-require_once 'HTTP2/Exception.php';
 
 /**
  * Miscellaneous HTTP Utilities
@@ -52,7 +54,7 @@ class HTTP2
      * @return string|boolean GMT date string, or FALSE for an invalid
      *                        $time parameter
      */
-    public function date($time = null)
+    static public function date($time = null)
     {
         if (!isset($time)) {
             $time = time();
@@ -98,7 +100,7 @@ class HTTP2
      *
      * @return string The negotiated language result or the supplied default.
      */
-    public function negotiateLanguage($supported, $default = 'en-US')
+    static public function negotiateLanguage($supported, $default = 'en-US')
     {
         $supp = array();
         foreach ($supported as $lang => $isSupported) {
@@ -112,7 +114,7 @@ class HTTP2
         }
 
         if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            $match = $this->matchAccept(
+            $match = self::matchAccept(
                 $_SERVER['HTTP_ACCEPT_LANGUAGE'],
                 $supp
             );
@@ -154,7 +156,7 @@ class HTTP2
      * @return string The negotiated language result or the supplied default.
      * @author Philippe Jausions <jausions@php.net>
      */
-    public function negotiateCharset($supported, $default = 'ISO-8859-1')
+    static public function negotiateCharset($supported, $default = 'ISO-8859-1')
     {
         $supp = array();
         foreach ($supported as $charset) {
@@ -166,7 +168,7 @@ class HTTP2
         }
 
         if (isset($_SERVER['HTTP_ACCEPT_CHARSET'])) {
-            $match = $this->matchAccept(
+            $match = self::matchAccept(
                 $_SERVER['HTTP_ACCEPT_CHARSET'],
                 $supp
             );
@@ -204,7 +206,7 @@ class HTTP2
      * @return string The negotiated MIME type result or the supplied default.
      * @author Philippe Jausions <jausions@php.net>
      */
-    public function negotiateMimeType($supported, $default)
+    static public function negotiateMimeType($supported, $default)
     {
         $supp = array();
         foreach ($supported as $type) {
@@ -216,7 +218,7 @@ class HTTP2
         }
 
         if (isset($_SERVER['HTTP_ACCEPT'])) {
-            $accepts = $this->sortAccept($_SERVER['HTTP_ACCEPT']);
+            $accepts = self::sortAccept($_SERVER['HTTP_ACCEPT']);
 
             foreach ($accepts as $type => $q) {
                 if (substr($type, -2) != '/*') {
@@ -251,9 +253,9 @@ class HTTP2
      *
      * @return string|NULL a matched option, or NULL if no match
      */
-    protected function matchAccept($header, $supported)
+    static public function matchAccept($header, $supported)
     {
-        $matches = $this->sortAccept($header);
+        $matches = self::sortAccept($header);
         foreach ($matches as $key => $q) {
             if (isset($supported[$key])) {
                 return $supported[$key];
@@ -273,7 +275,7 @@ class HTTP2
      *
      * @return array Sorted list of "accept" options
      */
-    protected function sortAccept($header)
+    static public function sortAccept($header)
     {
         $matches = array();
         foreach (explode(',', $header) as $option) {
@@ -322,19 +324,19 @@ class HTTP2
      *
      * @return array Returns associative array of response headers on success
      *
-     * @throws HTTP2_Exception          When connecting fails
-     * @throws InvalidArgumentException When the protocol is not uspported
+     * @throws HTTP2Exception          When connecting fails
+     * @throws \InvalidArgumentException When the protocol is not uspported
      *
      * @see HTTP_Client::head()
      * @see HTTP_Request
      */
-    public function head($url, $timeout = 10)
+    static public function head($url, $timeout = 10)
     {
         $p = parse_url($url);
         if (!isset($p['scheme'])) {
-            $p = parse_url($this->absoluteURI($url));
+            $p = parse_url(self::absoluteURI($url));
         } elseif ($p['scheme'] != 'http') {
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 'Unsupported protocol: '. $p['scheme']
             );
         }
@@ -342,7 +344,7 @@ class HTTP2
         $port = isset($p['port']) ? $p['port'] : 80;
 
         if (!$fp = @fsockopen($p['host'], $port, $eno, $estr, $timeout)) {
-            throw new HTTP2_Exception("Connection error: $estr ($eno)");
+            throw new HTTP2Exception("Connection error: $estr ($eno)");
         }
 
         $path  = !empty($p['path']) ? $p['path'] : '/';
@@ -353,7 +355,7 @@ class HTTP2
         fputs($fp, "Connection: close\r\n\r\n");
 
         $response = rtrim(fgets($fp, 4096));
-        if (preg_match("|^HTTP/[^\s]*\s(.*?)\s|", $response, $status)) {
+        if (preg_match('|^HTTP/[^\s]*\s(.*?)\s|', $response, $status)) {
             $headers['response_code'] = $status[1];
         }
         $headers['response'] = $response;
@@ -387,13 +389,13 @@ class HTTP2
      * @return boolean Returns TRUE on succes (or exits) or FALSE if headers
      *                 have already been sent.
      */
-    function redirect($url, $exit = true, $rfc2616 = false)
+    static public function redirect($url, $exit = true, $rfc2616 = false)
     {
         if (headers_sent()) {
             return false;
         }
 
-        $url = $this->absoluteURI($url);
+        $url = self::absoluteURI($url);
         header('Location: '. $url);
 
         if ($rfc2616 && isset($_SERVER['REQUEST_METHOD'])
@@ -437,7 +439,7 @@ location.replace("'.str_replace('"', '\\"', $url).'");
      * @return string The absolute URI.
      * @author Philippe Jausions <Philippe.Jausions@11abacus.com>
      */
-    public function absoluteURI($url = null, $protocol = null, $port = null)
+    static public function absoluteURI($url = null, $protocol = null, $port = null)
     {
         // filter CR/LF
         $url = str_replace(array("\r", "\n"), ' ', $url);
@@ -484,7 +486,7 @@ location.replace("'.str_replace('"', '\\"', $url).'");
         if ($protocol == 'http' && $port == 80) {
             unset($port);
         }
-        if ($protocol == 'https' && $port == 443) {
+        else if ($protocol == 'https' && $port == 443) {
             unset($port);
         }
 
@@ -541,7 +543,7 @@ location.replace("'.str_replace('"', '\\"', $url).'");
      *
      * @link http://tools.ietf.org/html/rfc5988
      */
-    public function parseLinks($lines)
+    static public function parseLinks($lines)
     {
         $lines = (array) $lines;
         $extracted = array();
@@ -611,7 +613,7 @@ location.replace("'.str_replace('"', '\\"', $url).'");
                             continue;
                         }
                         list($charset, $lang, $val) = $parts;
-                        $link[$pname][$lang] = $this->convertCharset(
+                        $link[$pname][$lang] = self::convertCharset(
                             $charset, 'utf-8', urldecode($val)
                         );
                     } else if ($pname == 'rel' || $pname == 'rev') {
@@ -648,7 +650,7 @@ location.replace("'.str_replace('"', '\\"', $url).'");
      *
      * @return string converted string
      */
-    protected function convertCharset($from, $to, $str)
+    static protected function convertCharset($from, $to, $str)
     {
         if (function_exists('mb_convert_encoding')) {
             return mb_convert_encoding($str, $to, $from);
@@ -658,4 +660,3 @@ location.replace("'.str_replace('"', '\\"', $url).'");
         return $str;
     }
 }
-?>

@@ -1,3 +1,12 @@
+
+
+## HTTP2 via autoloading
+
+This is a simple port of the PEAR HTTP2 library to make it use autoloading rather than require, and to be callable via static function, as the class has no state.
+
+
+## Previous Readme
+
 This package is http://pear.php.net/package/HTTP and has been migrated from http://svn.php.net/repository/pear/packages/HTTP
 
 Please report all new issues via the PEAR bug tracker.

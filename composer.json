@@ -1,37 +1,31 @@
 {
+    "name": "danack/danackhttp2",
     "authors": [
         {
-            "email": "mike@php.net",
-            "name": "Michael Wallner",
-            "role": "Lead"
-        },
-        {
-            "email": "jausions@php.net",
-            "name": "Philippe Jausions",
-            "role": "Lead"
+            "email": "Danack@basereality.com",
+            "name": "Dan Ackroyd",
+            "role": "Developer"
         }
     ],
     "autoload": {
         "psr-0": {
-            "HTTP2": "./"
+            "HTTP2": "src/"
         }
     },
-    "description": "A fork of HTTP for PHP5+",
+    "description": "A fork of HTTP for PHP5 and autoloading",
     "include-path": [
         "./"
     ],
     "license": "New BSD License",
-    "name": "pear/http2",
+    
     "support": {
         "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=HTTP2",
-        "source": "https://github.com/pear/HTTP2"
+        "source": "https://github.com/Danack/HTTP2"
     },
     "type": "library",
     "require": {
-        "pear/pear_exception": "*",
-        "pear/pear": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "*"
+        "phpunit/phpunit": "~4.0.0"
     }
 }
